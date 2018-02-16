@@ -56,10 +56,22 @@ def lambda_handler(event, context):
         RoleName=role,
         )
 
-    #Run Document for the instance to deploy and activate DS agent
-    EC2id = [instanceid]
-    NameDocument = os.environ['LinuxDocument']
-    ssm = boto3.client('ssm')
-    testCommand = ssm.send_command(InstanceIds=EC2id, DocumentName=NameDocument)
+    #get the OS platform from the EC2
+    OS = instance.platform
 
-    return 0
+    if OS == "windows":
+        #Run Document for the instance to deploy and activate DS agent on Windows
+        EC2id = [instanceid]
+        NameDocument = os.environ['WindowsDocument']
+        ssm = boto3.client('ssm')
+        testCommand = ssm.send_command(InstanceIds=EC2id, DocumentName=NameDocument)
+        print(OS)
+
+    else:
+        #Run Document for the instance to deploy and activate DS agent on Linux
+        EC2id = [instanceid]
+        NameDocument = os.environ['LinuxDocument']
+        ssm = boto3.client('ssm')
+        testCommand = ssm.send_command(InstanceIds=EC2id, DocumentName=NameDocument)
+
+return 0
