@@ -11,4 +11,4 @@ Automation processo to deploy and activate Deep Security Agents using Lambda Fun
   * Improve the checking Policy inside the Role when an EC2 has already a role applied
   
 # Known Issues
-  * Sometimes when you create a new EC2 without any Role applied or without the properly Policy to run SSM Document it's not able because the EC2 didnt get the properly IAM permission 
+  * Sometimes when you create a new EC2 without any Role applied or without the properly Policy to run SSM Document it's not able to execute the SSM Agent commands, because the EC2 didn't get the properly IAM permission on time to run it.
