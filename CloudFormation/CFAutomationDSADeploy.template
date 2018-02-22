@@ -142,7 +142,6 @@ Resources:
 
               #get the IAM (Arn) applied for the instance
               ARN = instance.iam_instance_profile
-              logger.info("instance " + instanceid + " has instance profile " + ARN + " assigned")
 
               #Check if the EC2 has the Tag InstallDSA if not add Tag Install DSA with Value 'Yes'
               if instance.tags == None:
