@@ -120,8 +120,8 @@ Resources:
           logger = logging.getLogger()
           logger.setLevel(logging.INFO)
           logger.info("logging setup complete")
-          logging.getLogger('botocore').setLevel(logging.DEBUG)
-          logging.getLogger('boto3').setLevel(logging.DEBUG)
+          #logging.getLogger('botocore').setLevel(logging.DEBUG)
+          #logging.getLogger('boto3').setLevel(logging.DEBUG)
 
           def lambda_handler(event, context):
               logger.info('initializing for instanceid: ' + event['detail']['instance-id'])
