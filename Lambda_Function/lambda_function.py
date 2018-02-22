@@ -4,10 +4,10 @@ import json
 
 def lambda_handler(event, context):
 
-    #get Instance-ID from the instance that generated the log in CloudWatch
+    #get InstanceID from the EC2 that generated the log in CloudWatch
     instanceid = event['detail']['instance-id']
 
-    #Wait Instance to be with status Running
+    #Wait EC2 to be with status Running
     ec2 = boto3.resource('ec2')
     instance = ec2.Instance(instanceid)
     instance.wait_until_running()
@@ -20,8 +20,18 @@ def lambda_handler(event, context):
     #get the IAM (Arn) applied for the instance
     ARN = instance.iam_instance_profile
 
+    #Check if the EC2 has the Tag InstallDSA if not add Tag Install DSA with Value 'Yes'
+    if instance.tags == None:
+        #Call the function addTag
+        addTag(ec2client, instanceid)
+    else:
+        #Check if there are any Tag associated with the Ec2 with the name InstallDSA and with the Value set up as "No" or "no", if yes stop the script
+        for tags in instance.tags:
+            if (tags["InstallDSA"] == 'No') or (tags["InstallDSA"] == 'no'):
+                return 0
+
     if ARN == None:
-        #Get values from Environment variables created on CloudFormation process
+        #Get values from Environment variables created by the CloudFormation process
         ARNInstancePro = os.environ['InstanceProfiletoEC2Arn']
         NameInstancePro = os.environ['InstanceProfiletoEC2Name']
 
@@ -56,22 +66,19 @@ def lambda_handler(event, context):
         RoleName=role,
         )
 
-    #get the OS platform from the EC2
-    OS = instance.platform
+    return 0
 
-    if OS == "windows":
-        #Run Document for the instance to deploy and activate DS agent on Windows
-        EC2id = [instanceid]
-        NameDocument = os.environ['WindowsDocument']
-        ssm = boto3.client('ssm')
-        testCommand = ssm.send_command(InstanceIds=EC2id, DocumentName=NameDocument)
-        print(OS)
-
-    else:
-        #Run Document for the instance to deploy and activate DS agent on Linux
-        EC2id = [instanceid]
-        NameDocument = os.environ['LinuxDocument']
-        ssm = boto3.client('ssm')
-        testCommand = ssm.send_command(InstanceIds=EC2id, DocumentName=NameDocument)
-
-return 0
+def addTag(ec2object,ec2id):
+    #Use function from boto3 to add Tag to the EC2
+    response = ec2object.create_tags(
+                Resources=[
+                    ec2id,
+                ],
+                Tags=[
+                    {
+                        'Key': 'InstallDSA',
+                        'Value': 'Yes'
+                    },
+                ]
+            )
+    
