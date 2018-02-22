@@ -196,7 +196,7 @@ Resources:
 
           def addTag(ec2object,ec2id):
               #Use function from boto3 to add Tag to the EC2
-              logger.info("instance " + instanceid + " is getting the InstallDSA tag")
+              logger.info("instance " + ec2id + " is getting the InstallDSA tag")
               response = ec2object.create_tags(
                           Resources=[
                               ec2id,
