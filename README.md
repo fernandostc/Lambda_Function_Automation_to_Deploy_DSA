@@ -1,5 +1,6 @@
-# Lambda_Function_Automation_to_Deploy_DSA
-Automation processo to deploy and activate Deep Security Agents using Lambda Function
+# DS Deploy Automation using Lambda 
+
+Automation process to deploy and activate Deep Security Agents using Lambda function
 
 ![](Architecture_version2.png)
  
