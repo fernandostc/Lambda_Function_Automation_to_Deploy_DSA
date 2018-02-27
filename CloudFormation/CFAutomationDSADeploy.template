@@ -469,7 +469,7 @@ Resources:
                   CURLOUT=$(eval curl
                   $SOURCEURL/software/deploymentscript/platform/linux-secure/ -o
                   /tmp/DownloadInstallAgentPackage --silent --tlsv1.2;)
-                - err=$?
+                - 'err=$?'
                 - 'if [[ $err -eq 60 ]]; then'
                 - >-
                   echo "SSL certificate validation for the agent package
