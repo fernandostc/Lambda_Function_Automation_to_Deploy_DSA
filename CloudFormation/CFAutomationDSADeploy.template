@@ -359,6 +359,20 @@ Resources:
                   Write-Warning "You are not running as an Administrator. Please
                   try again with admin privileges."
                 - 'exit 1 }'
+                - 'if ((Get-Item $Env:ProgramFiles"\Trend Micro\Deep Security Agent\dsa.exe" ).Exists){ '
+                - 'echo "$(Get-Date -format T) - DSA Installed" '
+                - 'if (& $Env:ProgramFiles"\Trend Micro\Deep Security Agent\dsa_query.cmd" --cmd GetAgentStatus dsmUrl){ '
+                - 'echo "$(Get-Date -format T) - DSA Activated" '
+                - 'exit } '
+                - 'else { '
+                - 'echo "$(Get-Date -format T) - DSA not activated" '
+                - 'echo "$(Get-Date -format T) - DSA activation started" '
+                - '& $Env:ProgramFiles"\Trend Micro\Deep Security Agent\dsa_control" -r '
+                - >-
+                & $Env:ProgramFiles"\Trend Micro\Deep Security Agent\dsa_control" -a dsm://agents.deepsecurity.trendmicro.com:443/
+                "tenantID:48099067-72D3-5BA3-D24C-4817FB2DE13C" "token:83618121-10B3-A62A-ECF8-81E9E8070423"
+                - 'exit } '
+                - '}'
                 - >-
                   $env:LogPath = "$env:appdata\Trend Micro\Deep Security
                   Agent\installer"
@@ -428,6 +442,12 @@ Resources:
             inputs:
               runCommand:
                 - '#!/usr/bin/env bash '
+                - 'if [[ $(/usr/bin/id -u) -ne 0 ]]; then'
+                - >-
+                  logger -t You are not running as the root user.  Please try
+                  again with root privileges.;
+                - exit 1;
+                - fi;
                 - 'if [ -f /opt/ds_agent/ds_agent ]; then'
                 - 'echo "Agent Installed"; '
                 - >-
@@ -442,12 +462,6 @@ Resources:
                   }}' 'token:{{ Token }}'
                 - exit;
                 - fi
-                - fi;
-                - 'if [[ $(/usr/bin/id -u) -ne 0 ]]; then'
-                - >-
-                  logger -t You are not running as the root user.  Please try
-                  again with root privileges.;
-                - exit 1;
                 - fi;
                 - if type curl >/dev/null 2>&1; then
                 - 'SOURCEURL=''https://app.deepsecurity.trendmicro.com:443'' '
@@ -477,7 +491,7 @@ Resources:
                   'E7775395D5FFF56CCD7D2F171ECFE2F8A704DC109C9215B7E29BC09CCC92045C
                   /tmp/DownloadInstallAgentPackage' | sha256sum -c; then
                 - '. /tmp/DownloadInstallAgentPackage '
-                - 'Download_Install_Agent '
+                - 'Download_Install_Agent'
                 - 'else '
                 - 'echo "Failed to validate the agent installation script." '
                 - 'logger -t Failed to validate the agent installation script '
