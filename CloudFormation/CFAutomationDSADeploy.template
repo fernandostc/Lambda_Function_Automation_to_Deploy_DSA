@@ -369,7 +369,8 @@ Resources:
                 - 'echo "$(Get-Date -format T) - DSA activation started" '
                 - '& $Env:ProgramFiles"\Trend Micro\Deep Security Agent\dsa_control" -r '
                 - >-
-                  & $Env:ProgramFiles"\Trend Micro\Deep Security Agent\dsa_control" -a dsm://{{ DSHostnameActivation }}:{{
+                  & $Env:ProgramFiles"\Trend Micro\Deep Security
+                  Agent\dsa_control" -a dsm://{{ DSHostnameActivation }}:{{
                   DSPort }}/ 'tenantID:{{ TenantID }}' 'token:{{ Token }}'
                 - 'exit } '
                 - '}'
