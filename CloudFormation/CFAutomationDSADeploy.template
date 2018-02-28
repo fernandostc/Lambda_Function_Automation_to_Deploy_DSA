@@ -369,8 +369,8 @@ Resources:
                 - 'echo "$(Get-Date -format T) - DSA activation started" '
                 - '& $Env:ProgramFiles"\Trend Micro\Deep Security Agent\dsa_control" -r '
                 - >-
-                & $Env:ProgramFiles"\Trend Micro\Deep Security Agent\dsa_control" -a dsm://agents.deepsecurity.trendmicro.com:443/
-                "tenantID:48099067-72D3-5BA3-D24C-4817FB2DE13C" "token:83618121-10B3-A62A-ECF8-81E9E8070423"
+                  & $Env:ProgramFiles"\Trend Micro\Deep Security Agent\dsa_control" -a dsm://agents.deepsecurity.trendmicro.com:443/
+                  "tenantID:48099067-72D3-5BA3-D24C-4817FB2DE13C" "token:83618121-10B3-A62A-ECF8-81E9E8070423"
                 - 'exit } '
                 - '}'
                 - >-
@@ -441,79 +441,43 @@ Resources:
             name: runShellScript
             inputs:
               runCommand:
-                - '#!/usr/bin/env bash '
-                - 'if [[ $(/usr/bin/id -u) -ne 0 ]]; then'
-                - >-
-                  logger -t You are not running as the root user.  Please try
-                  again with root privileges.;
-                - exit 1;
-                - fi;
+                - '#!/bin/bash'
+                - '# This script detects platform and architecture, then downloads and installs the matching Deep Security Agent package'
+                - 'if [[ $(/usr/bin/id -u) -ne 0 ]]; then echo You are not running as the root user.  Please try again with root privileges.;'
+                - 'logger -t You are not running as the root user.  Please try again with root privileges.;'
+                - 'exit 1;'
+                - 'fi;'
                 - 'if [ -f /opt/ds_agent/ds_agent ]; then'
                 - 'echo "Agent Installed"; '
                 - >-
-                  if sudo /opt/ds_agent/dsa_query --cmd GetAgentStatus | grep
+                  if /opt/ds_agent/dsa_query --cmd GetAgentStatus | grep
                   dsmUrl; then echo "Agent Activated";
-                - exit;
+                - 'exit;'
                 - 'else echo "Agent not Activated"; '
-                - 'sudo /opt/ds_agent/dsa_control -r '
+                - '/opt/ds_agent/dsa_control -r '
                 - >-
-                  sudo /opt/ds_agent/dsa_control -a dsm://{{
-                  DSHostnameActivation }}:{{ DSPort }}/ 'tenantID:{{ TenantID
-                  }}' 'token:{{ Token }}'
-                - exit;
-                - fi
-                - fi;
-                - if type curl >/dev/null 2>&1; then
+                  /opt/ds_agent/dsa_control -a dsm://{{
+                  DSHostnameActivation }}:{{ DSPort }}/ 'tenantID:{{ TenantID }}' 'token:{{ Token }}'
+                - 'exit; '
+                - 'fi '
+                - 'fi; '
+                - 'if type curl >/dev/null 2>&1; then '
                 - 'SOURCEURL=''https://app.deepsecurity.trendmicro.com:443'' '
                 - >-
                   CURLOUT=$(eval curl
                   $SOURCEURL/software/deploymentscript/platform/linux-secure/ -o
                   /tmp/DownloadInstallAgentPackage --silent --tlsv1.2;)
-                - 'err=$?'
-                - 'if [[ $err -eq 60 ]]; then'
-                - >-
-                  echo "SSL certificate validation for the agent package
-                  download has failed. Please check that your Deep Security
-                  Manager SSL certificate is signed by a trusted root
-                  certificate authority. For more information, search for
-                  "deployment scripts" in the Deep Security Help Center."
-                - >-
-                  logger -t SSL certificate validation for the agent package
-                  download has failed. Please check that your Deep Security
-                  Manager SSL certificate is signed by a trusted root
-                  certificate authority. For more information, search for
-                  "deployment scripts" in the Deep Security Help Center.
-                - exit 2;
-                - fi
-                - 'if [ -s /tmp/DownloadInstallAgentPackage ]; then'
-                - >-
-                  if echo
-                  'E7775395D5FFF56CCD7D2F171ECFE2F8A704DC109C9215B7E29BC09CCC92045C
-                  /tmp/DownloadInstallAgentPackage' | sha256sum -c; then
-                - '. /tmp/DownloadInstallAgentPackage '
+                - '. /tmp/DownloadInstallAgentPackage'
                 - 'Download_Install_Agent'
-                - 'else '
-                - 'echo "Failed to validate the agent installation script." '
-                - 'logger -t Failed to validate the agent installation script '
-                - 'false'
-                - fi
-                - else
-                - 'echo "Failed to download the agent installation script." '
-                - >-
-                  logger -t Failed to download the Deep Security Agent
-                  installation script
-                - 'false'
-                - fi
-                - else
+                - 'else'
                 - 'echo " Please install CURL before running this script." '
-                - logger -t Please install CURL before running this script
+                - 'logger -t Please install CURL before running this script '
                 - 'false'
-                - fi
-                - sleep 15
-                - '/opt/ds_agent/dsa_control -r '
+                - 'fi'
+                - 'sleep 15'
+                - '/opt/ds_agent/dsa_control -r'
                 - >-
-                  sudo /opt/ds_agent/dsa_control -a dsm://{{
-                  DSHostnameActivation }}:{{ DSPort }}/ 'tenantID:{{ TenantID
+                  /opt/ds_agent/dsa_control -a dsm://{{ DSHostnameActivation }}:{{ DSPort }}/ 'tenantID:{{ TenantID
                   }}' 'token:{{ Token }}'
               workingDirectory: '{{ workingDirectory }}'
               timeoutSeconds: '{{ executionTimeout }}'
