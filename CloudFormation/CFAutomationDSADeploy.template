@@ -601,6 +601,7 @@ Resources:
             Action:
               - 'iam:PassRole'
               - 'ec2:DescribeInstances'
+              - 'ec2messages:GetMessages'
               - 'logs:CreateLogGroup'
               - 'logs:CreateLogStream'
               - 'logs:PutLogEvents'
