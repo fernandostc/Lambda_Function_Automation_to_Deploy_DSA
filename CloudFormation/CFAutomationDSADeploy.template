@@ -120,15 +120,11 @@ Resources:
           logger = logging.getLogger()
           logger.setLevel(logging.INFO)
           logger.info("logging setup complete")
-          #logging.getLogger('botocore').setLevel(logging.DEBUG)
-          #logging.getLogger('boto3').setLevel(logging.DEBUG)
 
           def lambda_handler(event, context):
               logger.info('initializing for instanceid: ' + event['detail']['instance-id'])
-              #get InstanceID from the EC2 that generated the log in CloudWatch
               instanceid = event['detail']['instance-id']
 
-              #Wait EC2 to be with status Running
               ec2_resource = boto3.resource('ec2')
               instance = ec2_resource.Instance(instanceid)
               instance.wait_until_running()
@@ -149,7 +145,6 @@ Resources:
                   #Call the function addTag
                   addTag(ec2_client, instanceid)
               else:
-                  #Check if there are any Tag associated with the Ec2 with the name InstallDSA and with the Value set up as "No" or "no", if yes stop the script
                   for tags in instance.tags:
                       if tags['Key'] == "InstallDSA":
                           if (tags["Value"] == 'No') or (tags["Value"] == 'no') or (tags["Value"] == 'NO'):
@@ -161,8 +156,6 @@ Resources:
                               break
 
               if arn_instance_profile == None:
-                  #If EC2 does not have Instance Profile applied we will attach an instance profile created from the CloudFormation with the properly policy permision to run SSM remote commands
-                  #Get values from Environment variables created by the CloudFormation process
                   arn_instance_profile_from_CF = os.environ['InstanceProfiletoEC2Arn']
                   name_instance_profile_from_CF = os.environ['InstanceProfiletoEC2Name']
                   logger.info("instance " + instanceid + " has no instance profile; fixing it with " + arn_instance_profile_from_CF + " named " + name_instance_profile_from_CF)
@@ -202,7 +195,6 @@ Resources:
               return 0
 
           def addTag(ec2_client, instanceid):
-              #Use function from boto3 to add Tag to the EC2
               logger.info("instance " + instanceid + " is getting the InstallDSA tag")
               response = ec2_client.create_tags(
                           Resources=[
@@ -359,6 +351,8 @@ Resources:
                   Write-Warning "You are not running as an Administrator. Please
                   try again with admin privileges."
                 - 'exit 1 }'
+                - '$TENANTID="{{ TenantID }}" '
+                - '$TOKEN="{{ Token }}" '
                 - 'if ((Get-Item $Env:ProgramFiles"\Trend Micro\Deep Security Agent\dsa.exe" ).Exists){ '
                 - 'echo "$(Get-Date -format T) - DSA Installed" '
                 - 'if (& $Env:ProgramFiles"\Trend Micro\Deep Security Agent\dsa_query.cmd" --cmd GetAgentStatus dsmUrl){ '
@@ -368,10 +362,24 @@ Resources:
                 - 'echo "$(Get-Date -format T) - DSA not activated" '
                 - 'echo "$(Get-Date -format T) - DSA activation started" '
                 - '& $Env:ProgramFiles"\Trend Micro\Deep Security Agent\dsa_control" -r '
+                - 'if ([string]::IsNullOrEmpty($TENANTID) -and [string]::IsNullOrEmpty($TOKEN)){ '
+                - >-
+                  & $Env:ProgramFiles"\Trend Micro\Deep Security
+                  Agent\dsa_control" -a dsm://{{ DSHostnameActivation }}:{{
+                  DSPort }}/
+                - '} else { '
+                - 'if ([string]::IsNullOrEmpty($TENANTID) -and ![string]::IsNullOrEmpty($TOKEN)){ '
+                - >-
+                  & $Env:ProgramFiles"\Trend Micro\Deep Security
+                  Agent\dsa_control" -a dsm://{{ DSHostnameActivation }}:{{
+                  DSPort }}/ 'token:{{ Token }}'
+                - '}else { '
                 - >-
                   & $Env:ProgramFiles"\Trend Micro\Deep Security
                   Agent\dsa_control" -a dsm://{{ DSHostnameActivation }}:{{
                   DSPort }}/ 'tenantID:{{ TenantID }}' 'token:{{ Token }}'
+                - '}'
+                - '}'
                 - 'exit } '
                 - '}'
                 - >-
@@ -425,10 +433,24 @@ Resources:
                 - >-
                   & $Env:ProgramFiles"\Trend Micro\Deep Security
                   Agent\dsa_control" -r
+                - 'if ([string]::IsNullOrEmpty($TENANTID) -and [string]::IsNullOrEmpty($TOKEN)){ '
+                - >-
+                  & $Env:ProgramFiles"\Trend Micro\Deep Security
+                  Agent\dsa_control" -a dsm://{{ DSHostnameActivation }}:{{
+                  DSPort }}/
+                - '} else { '
+                - 'if ([string]::IsNullOrEmpty($TENANTID) -and ![string]::IsNullOrEmpty($TOKEN)){ '
+                - >-
+                  & $Env:ProgramFiles"\Trend Micro\Deep Security
+                  Agent\dsa_control" -a dsm://{{ DSHostnameActivation }}:{{
+                  DSPort }}/ 'token:{{ Token }}'
+                - '}else { '
                 - >-
                   & $Env:ProgramFiles"\Trend Micro\Deep Security
                   Agent\dsa_control" -a dsm://{{ DSHostnameActivation }}:{{
                   DSPort }}/ 'tenantID:{{ TenantID }}' 'token:{{ Token }}'
+                - '}'
+                - '}'
                 - 'Stop-Transcript '
                 - 'echo "$(Get-Date -format T) - DSA Deployment Finished" '
                 - </powershell>
@@ -448,6 +470,8 @@ Resources:
                 - 'logger -t You are not running as the root user.  Please try again with root privileges.;'
                 - 'exit 1;'
                 - 'fi;'
+                - 'TENANTID={{ TenantID }}'
+                - 'TOKEN={{ Token }}'
                 - 'if [ -f /opt/ds_agent/ds_agent ]; then'
                 - 'echo "Agent Installed"; '
                 - >-
@@ -456,12 +480,22 @@ Resources:
                 - 'exit;'
                 - 'else echo "Agent not Activated"; '
                 - '/opt/ds_agent/dsa_control -r '
+                - 'if [ -z "$TENANTID" ] && [ -z "$TOKEN" ]  ; then '
                 - >-
-                  /opt/ds_agent/dsa_control -a dsm://{{
-                  DSHostnameActivation }}:{{ DSPort }}/ 'tenantID:{{ TenantID }}' 'token:{{ Token }}'
+                  /opt/ds_agent/dsa_control -a dsm://{{ DSHostnameActivation }}:{{ DSPort }}/
+                - 'else'
+                - 'if [ -z "$TENANTID" ]  ; then '
+                - >-
+                  /opt/ds_agent/dsa_control -a dsm://{{ DSHostnameActivation }}:{{ DSPort }}/ 'token:{{ Token }}'
+                - 'else'
+                - >-
+                  /opt/ds_agent/dsa_control -a dsm://{{ DSHostnameActivation }}:{{ DSPort }}/ 'tenantID:{{ TenantID
+                  }}' 'token:{{ Token }}'
+                - 'fi'
+                - 'fi'
                 - 'exit; '
-                - 'fi '
                 - 'fi; '
+                - 'fi'
                 - 'if type curl >/dev/null 2>&1; then '
                 - 'SOURCEURL=''https://app.deepsecurity.trendmicro.com:443'' '
                 - >-
@@ -475,11 +509,23 @@ Resources:
                 - 'logger -t Please install CURL before running this script '
                 - 'false'
                 - 'fi'
+                - 'TENANTID={{ TenantID }}'
+                - 'TOKEN={{ Token }}'
                 - 'sleep 15'
                 - '/opt/ds_agent/dsa_control -r'
+                - 'if [ -z "$TENANTID" ] && [ -z "$TOKEN" ]  ; then '
+                - >-
+                  /opt/ds_agent/dsa_control -a dsm://{{ DSHostnameActivation }}:{{ DSPort }}/
+                - 'else'
+                - 'if [ -z "$TENANTID" ]  ; then '
+                - >-
+                  /opt/ds_agent/dsa_control -a dsm://{{ DSHostnameActivation }}:{{ DSPort }}/ 'token:{{ Token }}'
+                - 'else'
                 - >-
                   /opt/ds_agent/dsa_control -a dsm://{{ DSHostnameActivation }}:{{ DSPort }}/ 'tenantID:{{ TenantID
                   }}' 'token:{{ Token }}'
+                - 'fi'
+                - 'fi'
               workingDirectory: '{{ workingDirectory }}'
               timeoutSeconds: '{{ executionTimeout }}'
     Metadata:
