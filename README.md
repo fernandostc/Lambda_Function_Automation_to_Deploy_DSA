@@ -11,3 +11,4 @@ Automation process to deploy, activate, and check the Deep Security Agents using
  
 # Next Features (Planning)
   * Create the possibility to generate diagnostic package from System Manager from remote command with Document
+  * Migrate Lambda code to a S3 Bucket global repository. There is a limitation of 4,096 characters today on CloudFormation with ZipFile code inside CloudFormation. The properly Lambda function today has 4,700+ characters
