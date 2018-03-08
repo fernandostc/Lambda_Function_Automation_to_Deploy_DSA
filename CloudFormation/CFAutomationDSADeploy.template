@@ -154,6 +154,7 @@ Resources:
                           elif (tags["Value"] != 'yes') or (tags["Value"] != 'Yes') or (tags["Value"] != 'YES'):
                               addTag(ec2_client, instanceid)
                               break
+                  addTag(ec2_client, instanceid)
 
               if arn_instance_profile == None:
                   arn_instance_profile_from_CF = os.environ['InstanceProfiletoEC2Arn']
@@ -614,10 +615,10 @@ Resources:
         id: d8959c7c-9591-4644-a8a4-ead4904fc2e1
     DependsOn:
       - RoletoEC2Instances
-  SSMAssociateLinuxDSA:
+  SSMAssociateLinuxandWindowsDSA:
     Type: 'AWS::SSM::Association'
     Properties:
-      AssociationName: SSMAssociateLinuxDSA
+      AssociationName: SSMAssociateLinuxandWindowsDSA
       Name: !Ref LinuxandWindowsDeployDSADocument
       Targets:
           - Key: tag:InstallDSA
@@ -655,7 +656,7 @@ Parameters:
     Default: app.deepsecurity.trendmicro.com
     Description: >-
       Enter with the FQDN from your Deep Security Console if is On-Premise or
-      keep the default FQDN if you are using DSaaS
+      keep the default FQDN if you are using DSaaS. Example (app.deepsecurity.trendmicro.com)
   DSPort:
     Type: String
     Default: '443'
