@@ -1,18 +1,18 @@
 {
     "schemaVersion":"1.2",
-    "description":"Installation and Activation Deep Security Agent using AWS SSM - Run Command",
+    "description":"Installation and Activation of the Trend Micro Deep Security Agent using AWS SSM - Run Command",
     "parameters":{
 
         "DSHostname":{
             "type":"String",
             "default":"app.deepsecurity.trendmicro.com",
-            "description":"Enter the externally accessible DNS name of IP address of the Deep Security Manager.Please enter app.deepsecurity.trendmicro.com if using Deep Security as a server.",
+            "description":"Enter the Deep Security Manager's publicly accessible DNS name or IP address. For DSaaS, enter app.deepsecurity.trendmicro.com.",
             "maxChars":4096
         },
         "DSHostnameActivation":{
             "type":"String",
             "default":"agents.deepsecurity.trendmicro.com",
-            "description":"Enter the externally accessible DNS name of IP address of the Deep Security Manager to activate agents by CLI. Please enter agents.deepsecurity.trendmicro.com if using Deep Security as a server.",
+            "description":"Enter the Deep Security Manager's publicly accessible DNS name or IP address. For DSaaS, enter agents.deepsecurity.trendmicro.com.",
             "maxChars":4096
         },
         "DSPort":{
@@ -25,19 +25,19 @@
         "TenantUser":{
             "type":"String",
             "default":"",
-            "description":"Enter the tenant ID, which is a hyphenated, 36-character string available in the Deployment Scripts dialog box in the Deep Security console. This parameter is mandatory if using Deep Security as a Service, or a multi-tenant installation of Deep Security Manager. Type NA id using a non-multi-tenant Manager.",
+            "description":"Enter your Tenant ID, which is a hyphenated, 36-character string available in the Deployment Scripts dialog box in the Deep Security console. This parameter is mandatory if using Deep Security as a Service, or a multi-tenant installation of Deep Security Manager. Enter "NA" if using a non-multi-tenant Manager.",
             "maxChars":4096
         },
         "TenantPass":{
             "type":"String",
             "default":"",
-            "description":"Enter the tenant activation password, which is a hyphenated, 36-character string available in the Deployment Scripts dialog box in the Deep Security console. This parameter is mandatory if using Deep Security as a Service, or a multi-tenant installation of Deep Security Manager. Type NA id using a non-multi-tenant Manager.",
+            "description":"Enter the tenant activation password, which is a hyphenated, 36-character string available in the Deployment Scripts dialog box in the Deep Security console. This parameter is mandatory if using Deep Security as a Service, or a multi-tenant installation of Deep Security Manager. Enter "NA" if using a non-multi-tenant Manager.",
             "maxChars":4096
         },
         "DSPolicy":{
             "type":"String",
             "default":"",
-            "description":"The Policy to be used when activating.",
+            "description":"Enter the Policy ID for assigning a policy (optional). Policy ID can be obtained with a RESTfull request to the listPolicies call or by examining the XML file of exported policies.",
             "maxChars":4096
         },
         "workingDirectory":{
